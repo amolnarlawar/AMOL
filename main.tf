@@ -6,7 +6,7 @@ provider "aws" {
 
 resource "aws_instance" "example_instance" {
   ami           = "ami-051f7e7f6c2f40dc1"  # Replace with your desired AMI ID
-  instance_type = "t2.micro"
+  instance_type = "t3.medium"
 
   tags = {
     Name = "ExampleInstance"
