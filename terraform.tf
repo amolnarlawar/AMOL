@@ -1,11 +1,11 @@
  cloud {
     organization = "amol-demo"
-
+/*
     workspaces {
       name = "AMOL"
     }
   }
-
+*/
   required_providers {
     aws = {
       source  = "hashicorp/aws"
