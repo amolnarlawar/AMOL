@@ -1,4 +1,5 @@
- terraform {
+/*
+terraform {
     organization = "amol-demo"
 
     workspaces {
@@ -15,3 +16,4 @@
 
   required_version = ">= 1.1.0"
 }
+*/
