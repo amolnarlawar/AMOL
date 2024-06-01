@@ -1,0 +1,1934 @@
+Configuration Management
+============================
+This is the process of configuring servers from one point
+of control
+
+Advantages
+==================
+1 Provisioning of Servers
+  Setup of s/w's on servers can be done very easily from one point
+
+2 Reduction of usage of resources
+  We require less amount of time,money and human resources to configure
+  servers
+
+3 Handling Snowflake servers
+  After a point of time all servers in the data center behave like
+  snowflake servers ie they might be running on slightly different
+  h/w and s/w confurations.Configuaration Management tools can pick
+  up this info in simple setup file which can be reused to setup
+  similar environments
+
+4 Disaster Recovery
+  In case of disaster recovery where we can loose an entire data center
+  we can recreate similar data center with greater ease
+
+5 Idempotent
+  Configuration Management tools are used to bring the servers to a
+  specific state called as "desired state",If the rmeote server is 
+  already in the desired state CM tools will not reconfigure that server
+
+===========================================================================
+Popular CM tools
+======================
+Ansible
+Chef
+Puppet
+Saltstack
+=========================================================================
+Ansible is installed on one machine that is called as "Controller"
+all the remaining servers that we want to configure are called
+as "managed nodes/hosts"
+Ansible uses "agentless" policy to configure the remote servers
+ie we don't require any client side s/w of ansible to be present
+on the managed nodes
+Ansible uses "push" methodology to push the configuration changes
+via passwordless ssh
+
+=========================================================================
+Setup of Ansible
+=============================
+1 Create 3-4 AWS ubuntu instances
+2 Name the first one Controller and the remaining as MAnaged nodes
+3 Establish passwordless ssh between Controller and managed nodes
+  a) Connect to managed node
+  b) Setup password of ubuntu user
+     sudo passwd ubuntu
+  c) Edit the sshd_config file
+     sudo vim /etc/ssh/sshd_config
+     Search for "PasswordAuthentication" and change it from no to yes
+  d) Restart ssh
+     sudo service ssh restart
+  e) Connect to Controller
+  f) Generate the ssh keys
+     ssh-keygen
+  g) Copy the public keys to authoried_keys on managed nodes
+     ssh-copy-id ubuntu@private_ip_of_managednode
+
+4 Install Ansible
+  a) Update the apt repository
+     sudo apt-get update
+  b) Install softwares required for ansible
+     sudo apt-get install software-properties-common
+  c) Add the latest version of ansible to apt repository
+     sudo apt-add-repository ppa:ansible/ansible
+  d) Update the apt repository
+     sudo apt-get update
+  e) Install ansible
+     sudo apt-get install -y ansible
+
+Ansible uses a files known as "inventory" file to read info about 
+the managed nodes,Here we should add the rmeote managed nodes
+ipaddress
+
+sudo vim /etc/ansible/hosts
+Copy paste the private ip address of all managed nodes
+
+Important Modules in Ansible
+===================================
+1 command
+2 shell
+3 ping
+4 user
+5 copy
+6 fetch
+7 file
+8 apt
+9 yum
+10 git
+11 service
+12 replace
+13 get_url
+14 uri
+15 debug
+16 stat
+17 include
+18 docker_container
+19 docker_image
+20 docker_login
+21 docker_swarm
+22 k8s
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=========================================================================
+Day 2
+=========================================================================
+Important modules in Ansible
+=====================================
+1 command: This is used to run basic linux commands on the managed
+nodes.This is the default module of Ansible
+
+2 shell: This is used to run shell scripts or python scripts
+on the managed nodes.It is also used to run commands related
+to redirection and piping
+
+3 ping: This is used to check if the rmeote servers are pingable or not
+
+4 user: This is used to perform user administration on managed nodes
+ie creating users,assigning home dirs,deleting users etc
+
+5 copy: Used to copy files and directories to the managed nodes
+
+6 fetch: Used to copy files and directories from the managed nodes to
+  controller
+
+7 apt: Used to s/w package managemrn on DEbain,Ubuntu based machines
+
+8 yum: similar to apt but it works on Redhat linux,centos etc
+
+9 service: USed to start,stop or restart services on the managed nodes
+
+10 git: Used to perform git version controlling on managed nodes
+
+11 get_url: Used to downlaod files from remote service
+
+12 uri: Used to check if the remote url is reachable or not
+
+13 debug : Used to display some output in JSON file format
+
+14 stat: Used to capture info about files and folders present on managed nodes
+
+15 include: This is used to call child playbooks from a parent playbook
+
+16 replace: This is used to replace specific text in a file
+
+17 lineinfile: This is also similar to replace
+
+18 docker_container: Used to manage docker containers on the managed nodes
+
+19 docker_image: USed to manage docker images
+
+20 docker_login: Used to login into docker registr
+
+21 file: Used to create delete files/directories
+============================================================================
+Ansible perfrom remote configuration in 3 ways
+1 Adhoc commands
+2 Playbooks
+3 Roles
+
+Adhoc commands
+====================
+Syntax
+===========
+ansible all/ipaddress/group_name -i path_of_inventory -m  module_name -a                                                                   'arguements'
+
+Command Module
+====================
+Ansible command to see the memmory info of all managed nodes
+ansible all -i /etc/ansible/hosts -m command -a 'free -m' 
+
+Note: /etc/ansible/hosts is the default inventory file of ansible
+and when using it we need not specify the -i option
+ansible all  -m command -a 'free -m' 
+
+Note: command module is the default module of Ansible and when 
+using it we need not specify the -m option
+ansible all -a 'free -m' 
+
+=========================================================================
+Shell Module:
+=====================
+Download the docker script and install docker on all managed nodes
+
+1 Download the docker script
+  ansible all -m shell -a 'curl -fsSL https://get.docker.com -o get-docker.sh'
+
+2 Install docker
+  ansible all -m shell -a 'sh get-docker.sh'   
+
+
+Shell module is also used for running commands related to redirection
+and piping
+
+Ansible command to capture memory info in a file on all managed nodes
+ansible all -m shell -a 'free -m > file1'
+
+=========================================================================
+User Module
+=================
+Ansible command to create a user and assign a password
+ansible all -m user -a 'name=Anu password=intelliqit' -b
+
+User module can also assign home dir,user id,default shell etc
+ansible all -m user -a 'name=Ravi password=intelliqit uid=1234 
+         comment="A normal user" home=/home/ubuntu/Ravi shell=/bin/bash' -b
+
+
+==========================================================================
+Day 3
+==========================================================================
+copy Module
+==================
+Ansible playbook to copy a file from controller to all managed nodes
+ansible all -m copy -a 'src=file1 dest=/tmp' 
+
+Copy modules can also change the permissions ,ownership and group ownership
+of files that are copied
+ansible all -m copy -a 'src=file1 dest=/tmp owner=Anu group=root mode=770' -b
+
+Copy module can also send content into a file
+ansible all -m copy -a 'content="Welcome to IntelliQ\n" dest=file1'
+
+
+===========================================================================
+apt module
+======================
+Ansible command to install git on all manged nodes
+ansible all -m apt -a 'name=git state=present' -b
+
+Note: state=present is for isntallation
+state=absent is for uninstallation
+state=latest is for upgrading
+
+To update tha apt repository before isntalling we can use "update_cache=yes"
+Ansible command to install tomcat9 after updating tha apt repository
+ansible all -m apt -a 'name=tomcat9 state=present update_cache=yes' -b
+
+============================================================================
+Service module
+===================
+ansible command to restart tomcat on all managed nodes
+ansible all -m service -a 'name=tomcat9 state=restarted' -b
+
+state=restarted is for restarting a service
+state=started is for starting a service
+state=stopped is for stopping a service
+
+==========================================================================
+Install tomcat ,copy tomcat-users.xml file and restart tomcat
+
+1 Install tomcat
+  ansible all -m apt -a 'name=tomcat9 state=present' -b
+
+2 Create tomcat-users.xml
+  vim tomcat-users.xml
+  <tomcat-users>
+     <user username="intelliqit" password="intelliqit" roles="manager-script"/>
+  </tomcat-users>
+
+3 Copy this file to all managed node
+  ansible all -m copy -a 'src=tomcat-users.xnl dest=/etc/tomcat9' -b
+
+4 Restart tomcat9
+  ansible all -m service -a 'name=tomcat9 state=restarted' -b
+
+===============================================================================
+git Modules
+==============
+Ansible command to clone a remote git repository into all managed nodes
+ansible all -m git -a 'repo=https://github.com/intelliqittrainings/maven.git                                                              dest=/tmp/mygit'
+
+=============================================================================
+get_url  Module
+=================
+Ansible command to download jenkins.war into all managed nodes
+ ansible all -m get_url -a 
+        'url=https://get.jenkins.io/war-stable/2.277.1/jenkins.war dest=/tmp'
+
+=============================================================================
+file Module
+================
+Ansible command to create a file on all managed nodes
+ansible all -m file -a 'name=/tmp/file22  state=touch'
+
+state=touch represents create file
+state=directory represents create a directory
+state=absent is for deleting files/directories
+
+=============================================================================
+fetch Module
+=====================
+Ansible command to copy the /etc/passwd file from all managed ndoes to controller
+ansible all -m fetch -a 'src=/etc/passwd dest=/tmp'
+
+=======================================================================
+Day 4
+=========================================================================
+Configuring apache2
+
+1 Install apache2 on all managed nodes
+  ansible all -m apt -a 'name=apache2 state=present' -b
+
+2 Edit the content of index.html file
+  ansible all -m copy -a 'content="Welcome to IntelliQIT"                                     dest=/var/www/html/index.html' -b
+
+3 Restart apache2
+  ansible all -m service -a 'name=apache2 state=restarted' -b
+
+==========================================================================
+Replace module
+=====================
+This is used to replace specific content of a file with
+some other content
+
+Change the port of tomcat from 8080 to 9090
+ansible all -m replace -a 'regexp=8080 replace=9090 
+                                 path=/etc/tomcat9/server.xml' -b
+
+Restart tomcat9
+ansible all -m service -a 'name=tomcat9 state=restarted' -b
+
+============================================================================
+uri Module
+===============
+Ansible command to check if google.com is reachable from all managed nodes
+ansible all -m uri -a 'url=http://google.com status_code=200'
+
+===========================================================================
+Configuring tomcat
+Install tomcat9 on all managed nodes,Copy the customised tomcat-users.xml file
+change port og tomcat from 8080 to 9090 and restart tomcat,check if tomcat is
+reachable from all managed nodes
+
+1 Install tomcat9
+  ansible all -m apt -a 'name=tomcat9 state=present update_cache-yes' -b
+
+2 Copy the tomcat-users.xml file
+  ansible all -m copy -a 'src=tomcat-users.xml dest=/etc/tomcat9' -b
+
+3 Change port of tomcat from 8080 to 9090
+  ansible all -m replace -a 'regexp=8080 replace=9090 
+                                       path=/etc/tomcat9/server.xml' -b
+
+4 Restart tomcat9
+  ansible all -m service -a 'name=tomcat9 state=restarted' -b
+
+5 Check the response of tomcat from server1 and server2
+  ansible all -m uri -a 'url=http://172.31.18.115:9090 status_code=200'
+  ansible all -m uri -a 'url=http://172.31.30.86:9090 status_code=200'
+
+============================================================================
+Ansible Playbooks
+========================
+Adhoc commands become difficutl to handle when working on complex
+configurations of s/w applications.
+Each adhoc command can work only on one module and one set of
+arguments.In such cases we can use Ansible playbooks which 
+support greater reusability.
+Playbooks are created using yaml and each playbook is a combination of
+multiple plays.A play contains info about what module has to be 
+executed.These plays are designed to work on a single host or a
+group of hosts or all the hosts
+
+============================================================================
+Anible playbook to create a user on all managed nodes
+
+vim playbook1.yml
+---
+- name: Create user
+  hosts: all
+  tasks:
+   - name: User creation
+     user:
+      name: Hari
+      password: intelliqit
+      uid: 1590
+      home: /home/ubuntu/Hari
+      comment: "A normal user"
+      shell: /bin/bash
+...
+
+To check if the playbook is syntaxtically correct or not
+ansible-playbook playbook1.yml --syntax-check
+
+To execute the playbook
+ansible-playbook playbook1.yml -b
+====================================================================
+Ansible playbook to configure apache2
+vim playbook2.yml
+---
+- name: Configuring apache2
+  hosts: all
+  tasks:
+   - name: Install apache2
+     apt:
+      name: apache2
+      state: present
+      update_cache: yes
+   - name: Edit the index.html file
+     copy:
+      content: "IntelliQIT"
+      dest: /var/www/html/index.html
+   - name: Restart apache2
+     service:
+      name: apache2
+      state: restarted
+   - name: Check the url response of apache2 on server1
+     uri:
+      url: http://172.31.18.115
+      status_code: 200
+   - name: Check the url response of apache2 on server2
+     uri:
+      url: http://172.31.30.86
+      status_code: 200
+...
+
+To run the playbook
+ansible-playbook playbook2.yml -b
+=====================================================================
+Day 5
+======================================================================
+Ansible playbook to configure tomcat9
+- name: Configuring tomcat
+  hosts: all
+  tasks:
+   - name: Install tomcat9
+     apt:
+      name: tomcat9
+      state: present
+      update_cache: yes
+   - name: Copy tomcat-users.xml
+     copy:
+      src: tomcat-users.xml
+      dest: /etc/tomcat9/
+   - name: Change port of tomcat from 8080 to 9090
+     replace:
+      regexp: 8080
+      replace: 9090
+      path: /etc/tomcat9/server.xml
+   - name: Restart tomcat9
+     service:
+      name: tomcat9
+      state: restarted
+   - name: Pause for 3 mins
+     pause:
+      minutes: 3
+   - name: Check tomcat response on server1
+     uri:
+      url: http://172.31.30.86:9090
+      status_code: 200
+   - name: Check tomcat response on server2
+     uri:
+      url: http://172.31.18.115:9090
+      status_code: 200
+...
+
+To execute the playbook
+ansible-playbook playbook3.yml -b
+
+========================================================================
+Variables in Ansible
+=========================
+Variables are categorised into 3 type
+1 Global scope varaibles
+2 Host Scope variables
+3 Play scope variables
+
+Global scope variables
+===========================
+These variables are defined from the command prompt using "--extra-vars"
+and they have the highest  level of priority
+
+Ansible playbook to install or uninstall various s/w applications
+vim playbook4.yml
+---
+- name: Install s/w applications
+  hosts: all
+  tasks:
+   - name: Install/uninstall s/w
+     apt:
+      name: "{{a}}"
+      state: "{{b}}"
+      update_cache: "{{c}}"
+...
+
+To run the above playbook to uninstall git
+ansible-playbook playbook4.yml --extra-vars "a=git b=absent c=no" -b
+
+We can use the same playbook to work on some other set of s/w's like install java
+
+ansible-playbook playbook4.yml --extra-vars "a=openjdk-8-jdk b=present c=no" -b
+
+============================================================================
+Ansible playbook to create users and files/dirs in users home dir
+vim playbook5.yml
+---
+- name: Create users and create files/dirs in user home dir
+  hosts: all
+  tasks:
+   - name: Create users
+     user:
+      name: "{{a}}"
+      password: "{{b}}"
+      home: "{{c}}"
+   - name: Create files/dirs in users home die
+     file:
+      name: "{{d}}"
+      state: "{{e}}"
+...
+
+To create multiple users and files/dirs
+ansible-playbook playbook5.yml --extra-vars "a=Usha b=intelliqit 
+                         c=/home/Usha d=/home/Usha/dir1 e=directory" -b
+
+ansible-playbook playbook5.yml --extra-vars "a=Ravi b=intelliqit 
+                           c=/home/Ravi d=/home/Ravi/file1 e=touch" -b
+
+==========================================================================
+Playscope varibles
+These varibales are defined within a playbook and they have the
+least priority
+
+vim playbook6.yml
+---
+- name: Install/unistall sw applications
+  hosts: all
+  vars:
+   - a: tomcat9
+   - b: present
+   - c: no
+  tasks:
+   - name: Install/unisntall
+     apt:
+      name: "{{a}}"
+      state: "{{b}}"
+      update_cache: "{{c}}"
+...
+
+The above playbook works like a template whose default behaviour
+is to install tomcat9 but we can make it work on some other application
+by passing global scope variables 
+
+=========================================================================
+Day 6
+=========================================================================
+
+=========================================================================
+
+
+Grouping in inventory file
+===============================
+sudo vim /etc/ansible/hosts
+
+[webserver]
+172.31.30.86
+172.31.18.115
+[appserver]
+172.31.92.137
+[dbserver]
+172.31.86.213
+172.31.18.115
+[server:children]
+appserver
+dbserver
+
+
+===============================================================
+Host scope variables
+=============================
+These are classified into 2 types
+1 Variables to work on a group of hosts
+2 Variables to work on a single host
+
+Variables to work on a group of hosts
+===========================================
+1 Go to the folder where all playbook are present
+  cd path_of_playbooks_folder
+
+2 Create a directory "group_vars" and move into it
+  mkdir group_vars
+  cd group_vars
+
+3 Create a file whose name is same as group name from inventroy
+  vim webserver
+  ---
+  a: Radha
+  b: intelliqit
+  c: 111111
+  d: /home/Radha
+  e: /bin/bash
+  ...
+
+4 Go back to the folder where the playbooks are present
+  cd ..
+
+5 Create a plyabook to use the above variables
+  vim playbok7.yml
+  ---
+- name: Create user using host scope varibales
+  hosts: webserver
+  tasks:
+   - name: Create user
+     user:
+      name: "{{a}}"
+      password: "{{b}}"
+      uid: "{{c}}"
+      home: "{{d}}"
+      shell: "{{e}}"
+...
+
+6 To run the playbook
+  ansible-playbook playbook7.yml -b
+
+=================================================================
+
+Variables to work on a single hosts
+==========================================
+1 Go to the folder where all playbook are present
+  cd path_of_playbooks_folder
+
+2 Create a directory "host_vars" and move into it
+  mkdir host_vars
+  cd host_vars
+
+3 Create a file whose name is same as ipaddress of one machine from inventory file
+  vim 172.31.86.213
+  ---
+  a: firewalld
+  b: present
+  c: yes
+  ...
+
+4 Go back to the folder where the playbooks are present
+  cd ..
+
+5 Create a playbook to use the above variables
+  vim playbook8.yml
+  ---
+- name: Install firewall using host variables
+  hosts: 172.31.86.213
+  tasks:
+   - name: Install firewall
+     apt:
+      name: "{{a}}"
+      state: "{{b}}"
+      update_cache: "{{c}}"
+...
+
+6 To run tha above playbook
+  ansible-playbook playbook8.yml -b
+
+==========================================================================
+Loops in Ansible
+=========================
+Loops can be implemented in Ansible using
+with_items and with_sequence
+
+Ansible playbook to install multiple s/w applications
+vim playbook9.yml
+---
+- name: Install s/w applications
+  hosts: all
+  tasks:
+   - name: Install s/w
+     apt:
+      name: "{{item}}"
+      state: present
+      update_cache: yes
+     with_items:
+      - tree
+      - openjdk-8-jdk
+      - maven
+...
+
+The above way is depricated and it should be written in the below way
+vim playbook10.yml
+---
+- name: Install s.w applications
+  hosts: all
+  tasks:
+   - name: Install s/w
+     apt:
+      name: ["tree","openjdk-8-jdk","maven"]
+      state: present
+      update_cache: no
+...
+
+To install,uninstall,upgrade multiple s/w packages
+vim playbook11.yml
+---
+- name: Install s.w applications
+  hosts: all
+  tasks:
+   - name: Install s/w
+     apt:
+      name: "{{item.a}}"
+      state: "{{item.b}}"
+      update_cache: "{{item.c}}"
+     with_items:
+      - {a: tree,b: present,c: no}
+      - {a: openjdk-8-jdk,b: absent,c: no}
+      - {a: maven,b: latest,c: yes}
+...
+
+=======================================================================
+Day 7
+=======================================================================
+---
+- name: Create multiple users and copy files into users home dirs
+  hosts: all
+  tasks:
+   - name: Create multiple users
+     user:
+      name: "{{item.a}}"
+      password: "{{item.b}}"
+      home: "{{item.c}}"
+     with_items:
+      - {a: Rajesh,b: intelliqit,c: /home/ubuntu/Rajesh}
+      - {a: Rani,b: intelliqit,c: /home/Rani}
+   - name: Copy files into the users home dirs
+     copy:
+      src: "{{item.a}}"
+      dest: "{{item.b}}"
+     with_items:
+      - {a: /etc/passwd,b: /home/ubuntu/Rajesh}
+      - {a: /etc/group,b: /home/Rani}
+...
+
+=======================================================================
+Ansible playbook to setup the required environment for JenkinsCI-CD
+
+---
+- name: Install jenkins and required s/w
+  hosts: jenkinsserver
+  tasks:
+   - name: Install required s/w's
+     apt:
+      name: "{{item.a}}"
+      state: present
+      update_cache: "{{item.b}}"
+     with_items:
+      - {a: openjdk-8-jdk,b: yes}
+      - {a: git,b: no}
+      - {a: maven,b: no}
+   - name: Download jenkins.war
+     get_url:
+      url: https://get.jenkins.io/war-stable/2.277.1/jenkins.war
+      dest: /home/ubuntu
+   - name: Start jenkins
+     shell: java -jar jenkins.war
+- name: Install tomcat9 and required s/w's
+  hosts: servers
+  tasks:
+   - name: Install tomcat9 and tomcat9-admin
+     apt:
+      name: "{{item.a}}"
+      state: present
+      update_cache: "{{item.b}}"
+     with_items:
+      - {a: tomcat9,b: yes}
+      - {a: tomcat9-admin,b: no}
+   - name: Copy tomcat-users.xml file
+     copy:
+      src: tomcat-users.xml
+      dest: /etc/tomcat9
+   - name: Restart tomcat
+     service:
+      name: tomcat9
+      state: restarted
+
+...
+
+=======================================================================
+Tags in ansible
+====================
+Tags are used to get a more modular approach to executing the playbooks
+Using tags we can decide which modules to execute and which modules to skip
+
+---
+- name: Implementing tags
+  hosts: all
+  tasks:
+   - name: Install tree
+     apt:
+      name: tree
+      state: present
+     tags: tree_installtion
+   - name: Create user
+     user:
+      name: Usha
+      password: intelliqit
+     tags: user_creation
+   - name: Copy /etc/passwd file
+     copy:
+      src: /etc/passwd
+      dest: /tmp
+...
+
+========================================================================
+When conditions
+=======================
+This is "if" condtions and it helps us to execute modules based on a specific
+condition
+
+Create a file based on a condition
+---
+- name: Implementing when conditions
+  hosts: all
+  vars:
+   - a: 10
+  tasks:
+   - name: Create a file
+     file:
+      name: /tmp/file1
+      state: touch
+     when: a == 10
+
+
+=============================================================================
+Day 8
+=============================================================================
+---
+- name: Check if a folder called d1 is present if not create a file called d1
+  hosts: all
+  tasks:
+   - name: Check for d1 directory
+     stat:
+      path: /home/ubuntu/d1
+     register: a
+   - name: Display output of abouve module
+     debug:
+      var: a
+   - name: Create file d1 if dir d1 is not present
+     file:
+      name: /home/ubuntu/d1
+      state: touch
+     when: a.stat.exists == false
+
+
+===========================================================================
+Handlers
+===================
+1 Handlers are modules that are executed if some other module is executed
+succesfully and it has made some changes.
+
+2 Handlers are only executed after all the modules in the tasks section are executed
+
+3 Handlers are executed in the order that they are mentioned in the handlers section and not in the order that they are called in the tasks section
+
+4 Even if a handler is called multiple times in the tasks section it will
+be executed only once
+
+---
+- name: Implementing handlers
+  hosts: all
+  tasks:
+   - name: Install apache2
+     apt:
+      name: apache2
+      state: present
+     notify: Check url response
+   - name: Edit index.html file
+     copy:
+      content: "Welcome to my IntelliQIT\n"
+      dest: /var/www/html/index.html
+     notify: Restart apache2
+  handlers:
+   - name: Restart apache2
+     service:
+      name: apache2
+      state: restarted
+   - name: Check url response
+     uri:
+      url: "{{item}}"
+      status_code: 200
+     with_items:
+      - http://172.31.48.56
+      - http://172.31.36.172
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+==========================================================================
+Day 9
+==========================================================================
+Error Handling
+=====================
+Whenever a module in ansible playbook fails the execution
+of the playbook stops there,if we know that a spcific module
+can fail and still we want to continue the execution of the 
+playbook we can use error handling
+
+The module that might fail should be given in the "block" 
+section,if it fails the control comes to the "rescue" section
+"always" section is executed everytime
+
+Ansible playbook to install tomcat8 on all managed nodes if
+it fails then it should install tomcat9
+
+vim playbook19.yml
+---
+- name: Error handling or Exception Handling
+  hosts: all
+  tasks:
+   - block:
+      - name: Install tomcat8
+        apt:
+         name: tomcat8
+         state: present
+         update_cache: yes
+     rescue:
+      - name: Install tomcat9
+        apt:
+         name: tomcat9
+         state: present
+         update_cache: yes
+     always:
+      - name: Display output
+        debug:
+         msg: Tomcat setup successfull
+...
+
+=========================================================================
+
+---
+- name: Install git using yum and apt
+  hosts: all
+  tasks:
+   - block:
+      - name: Install git using apt
+        apt:
+         name: git
+         state: present
+         update_cache: yes
+     rescue:
+      - name: Install git using yum
+        yum:
+         name: git
+         state: present
+         update_cache: yes
+...
+
+=================================================================
+include module
+=================
+This is used to call child playbooks from the level of a parnet
+playbook
+
+Child playbook
+--------------------
+vim playbook20.yml
+---
+- name: Install tree
+  apt:
+   name: tree
+   state: present
+...
+
+Parent playbook
+---------------------
+vim playbook21.yml
+---
+- name: Call child playbooks
+  hosts: all
+  tasks:
+   - name: Install tree using child playbook
+     include: playbook20.yml
+...
+
+To execute
+ansible-playbook playbook21.yml -b
+
+=====================================================================
+Configuring apache2 using child playbooks
+Childplaybooks
+=================
+vim install_apache.yml
+---
+- name: Install apache2
+  apt:
+   name: apache2
+   state: present
+   update_cache: yes
+...
+
+vim edit_index.yml
+---
+- name: Edit index.html file
+  copy:
+   content: "New intelliqit"
+   dest: /var/www/html/index.html
+...
+
+vim service.yml
+---
+- name: Restart apache2
+  service:
+   name: apache2
+   state: restarted
+...
+
+vim check_url_response.yml
+---
+- name: Check url response of apache2 on all managed nodes
+  uri:
+   url: "{{item}}"
+   status_code: 200
+  with_items:
+   - http://172.31.89.80
+   - http://172.31.30.86
+   - http://172.31.18.115
+   - http://172.31.92.137
+...
+
+Parent playbook
+==================
+vim configure_apache.yml
+---
+- name: Configuring apache using child playbooks
+  hosts: all
+  tasks:
+   - name: Call multiple child playbooks
+     include: "{{item}}"
+     with_items:
+      - install_apache.yml
+      - edit_index.yml
+      - service.yml       
+      - check_url_response.yml
+...
+
+To run the playbook
+ansible-playbook configure_apache.yml -b
+
+=================================================================
+Day 10
+===================================================================
+Ansible playbook implement CI-CD
+======================================
+---
+- name: Install required s/w's for ci-cd
+  hosts: all
+  tasks:
+   - name: Install s/w's
+     apt:
+      name: "{{item.a}}"
+      state: present
+      update_cache: "{{item.b}}"
+     with_items:
+      - {a: git,b: yes}
+      - {a: openjdk-8-jdk,b: no}
+      - {a: maven,b: no}
+      - {a: tomcat9,b: no}
+- name: Continuous Download and Build
+  hosts: devserver
+  tasks:
+   - name: Download the code created by developers
+     git:
+      repo: https://github.com/intelliqittrainings/maven.git
+      dest:  /tmp/mygit
+   - name: Create an artifact from the above code
+     shell: cd /tmp/mygit;mvn package
+   - name: Fetch the artifact from devserver to controller
+     fetch:
+      src: /tmp/mygit/webapp/target/webapp.war
+      dest: /tmp
+- name: Continuous Deployment and Testing
+  hosts: qaserver
+  tasks:
+   - name: Deploy artifact into tomcat on QaServer
+     copy:
+      src: /tmp/172.31.16.122/tmp/mygit/webapp/target/webapp.war
+      dest: /var/lib/tomcat9/webapps/testapp.war
+   - name: Restart tomcat
+     service:
+      name: tomcat9
+      state: restarted
+   - name: Downlaod the selenium test scripts 
+     git:
+      repo: https://github.com/intelliqittrainings/FunctionalTesting.git
+      dest: /tmp/test-git
+   - name: Execute the seclenium test scripts
+     shell: java -jar /tmp/test-git/testing.jar
+- name: Continuous Delivery
+  hosts: prodserver
+  tasks:
+   - name: Deploy the artifact into prodserver tomcat
+     copy:
+      src: /tmp/172.31.16.122/tmp/mygit/webapp/target/webapp.war
+      dest: /var/lib/tomcat9/webapps/prodapp.war
+
+============================================================================
+
+Configuring tomcat using child playbooks and group variables
+
+Child playbooks
+---------------------
+vim install_tomcat.yml
+---
+- name: Install tomcat9 and tomcat9-admin
+  apt:
+   name: "{{item.a}}"
+   state: "{{item.b}}"
+   update_cache: "{{item.c}}"
+  with_items:
+   - {a: "{{a}}",b: "{{b}}",c: "{{c}}"}
+   - {a: "{{d}}",b: "{{b}}",c: "{{e}}"}
+...
+
+
+vim copy_tomcat_users.xml
+---
+- name: Copy tomcat-users.xml file
+  copy:
+   src: "{{f}}"
+   dest: "{{g}}"
+...
+
+
+vim change_port.yml
+---
+- name: Change port of tomcat from 8080 to 9090
+  replace:
+   regexp: "{{h}}"
+   replace: "{{i}}"
+   path: "{{j}}"
+...
+
+
+vim restart_tomcat.yml
+---
+- name: Restart tomcat9
+  service:
+   name: "{{a}}"
+   state: "{{k}}"
+...
+
+...
+
+vim url_response_tomcat.yml
+---
+- name: Check url response of tomcat
+  uri:
+   url: "{{item.a}}"
+   status_code: "{{item.b}}"
+  with_items:
+          # - {a: http://172.31.48.61:9090,b: 200}
+          #   - {a: http://172.31.55.129:9090,b: 200}
+   - {a: "{{l}}",b: "{{m}}"}
+   - {a: "{{n}}",b: "{{m}}"}
+...
+------------------------------------------------------
+Parent playbooks
+----------------------
+vim configure_tomcat.yml
+---
+- name: Configuring tomcat using child playbooks
+  hosts: servers
+  tasks:
+   - name: Call child playbooks for tomcat
+     include: "{{item}}"
+     with_items:
+      - install_tomcat.yml
+      - copy_tomcat_users.yml
+      - change_port.yml
+      - restart_tomcat.yml
+      - url_response_tomcat.yml
+...
+
+Creating variables for the above playbooks
+----------------------------------------------
+1 create a directory group_vars and move into it
+  mkdir group_vars
+  cd group_vars
+
+2 Create a file called servers to store the variables
+  vim servers
+a: tomcat9
+b: present
+c: yes
+d: tomcat9-admin
+e: no
+f: tomcat-users.xml
+g: /etc/tomcat9
+h: 8080
+i: 9090
+j: /etc/tomcat9/server.xml
+k: restarted
+l: http://172.31.55.129:9090
+m: 200
+n: http://172.31.48.61:9090
+...
+
+=============================================================================
+Day 11
+============================================================================
+---
+- name: Create user if not already present
+  hosts: all
+  tasks:
+   - block:
+      - name: Check for user info
+        shell: cut -d ":" -f 1 /etc/passwd | grep "{{a}}"
+        register: result
+     rescue:
+      - name: Create user
+        user:
+         name: Raju
+         password: intelliqit
+
+=================================================================================
+Ansible Vault
+===================
+This is a feature of ansible which allows us to protect the playbooks
+via a password.Playbooks created using vault can be viewed,edited or
+executed only if we know the password
+
+1 To create a vault playbook
+  ansible-vault create playbook_name.yml
+
+2 To view the content of  a vault playbook
+  ansible-vault view playbook_name.yml
+
+3 To edit the content of  a vault playbook
+  ansible-vault edit playbook_name.yml
+
+4 To convert an ordinary playbook into a vault playbook
+  ansible-vault encrypt playbook_name.yml
+
+5 To convert a vault playbook into an ordinary playbook
+  ansible-vault decrypt playbook_name.yml
+
+6 To reset the password of a vault  playbook
+  ansible-vault rekey playbook_name.yml
+
+=======================================================================
+Day 12
+==========================================================================
+=======================================================================
+Roles in Ansibles
+========================
+Roles provide greater reusability then playbooks
+Generally roles are used to configure s/w applications
+Everything necessary to configure a s/w applications should be
+present with the folder structure of a role
+This aids in easy understanding and maintainance of CM activites
+
+Roles should be create in /etc/ansible/roles folder
+
+To create roles in some other locations
+sudo vim /etc/ansible/ansible.config
+Search for roles_path and give the path of the directory where
+we want to create the role and uncomment it
+
+Folder structrue of roles
+================================
+README.MD : This is a simple text file that is used to store info about
+the role in plain English
+
+defaults: This stores info about the application that we are configuring
+and it also stores varibales of lesser priority
+
+files: All the static files that are required for configuring a s/w application
+are stored here
+
+meta: Data about the data is called as metadata and this is used to store info about 
+the roles like when it was created who created it what versions it supports etc
+ 
+handlers: handlers are modules that are executed when some other module is 
+successfull and it has  made some changes,all such handlers are stored in
+this folder
+
+tasks: The actual configuration management activity that has to be perfromed on the
+remote servers is stored in this folder
+
+templates: This is used to store dynamic configuration files
+
+tests: All the modules that are used to check if the remote configurations
+are successfull or not are stored in this folder
+
+vars: This is used to store all the variables that are required for configuring
+a specific s/w application.These variables have higher priority than the
+variables in defaults folder.
+
+
+
+Apache Role
+========================
+1 Go into the /etc/ansible/roles folder
+  cd /etc/ansible/roles
+
+2 Create a new role for apache2
+  ansible-galaxy init apache2 --offline
+
+3 check the tree structure of the role that we created
+  tree apache2
+
+4 Go to tasks folder in role and create the task for configuring apache2
+  cd apache2/tasks
+vim main.yml
+---
+- include: install.yml
+- include: configure.yml
+- include: check_url_response.yml
+...
+
+Save and quit    Esc :wq Enter
+
+vim install.yml
+---
+- name: install apache2
+  apt:
+   name: apache2
+   state: present
+
+Save and quit Esc :wq Enter
+
+vim configure.yml
+---
+- name:copy index.html
+  copy:
+   src: index.html
+   dest: /var/www/html/index.html
+  notify:
+   Restart apache2 
+...
+ 
+Save and quit Esc :wq Enter
+
+vim check_url_response.yml
+---
+- name: Check url response
+  uri:
+   url: "{{item}}"
+   status: 200
+  with_items:
+   - http://172.31.18.210
+   - http://172.31.31.227
+...
+
+Save and quit Esc :wq Enter
+
+Go to files folder to create the index.html file
+cd ..
+cd files
+sudo vim index.html
+<html>
+  <body>
+     <h1>This is IntelliQ</h1>
+  </body>
+</html>
+
+Save and quit Esc :wq Enter
+
+Go to handlers folder
+cd ..
+cd handlers
+
+sudo vim main.yml
+---
+# handlers file for apache2
+- name: Restart apache2
+  service:
+   name: apache2
+   state: restarted
+...
+
+Save and quit Esc :wq Enter
+
+CREATE the parent playbook to call the roles
+cd ..
+cd ..
+sudo vim apache_role.yml
+---
+- name: Implementing roles for apache2
+  hosts: all
+  roles:
+   - apache2
+...
+
+Save and quit Esc :wq Enter
+
+To execute the role
+ansible-playbook apache_role.yml -b
+
+==============================================================================
+Day 13
+===============================================================================
+
+Creating roles for tomcat
+
+---------------------------
+
+1 cd /etc/ansible/roles
+
+2 ansible-galaxy init tomcat --offline
+
+3 Create tasks for tomcat
+
+  a) cd tomcat/tasks
+
+  b) sudo vim main.yml
+
+  ---
+
+  - name: Calling child playbooks
+
+    include: "{{item}}"
+
+    with_items: 
+
+     - install.yml
+
+     - configure.yml
+
+     - restart.yml
+
+  ...
+
+  Save and quit
+
+ c) sudo vim install.yml                     
+
+---
+
+- name: Installing tomcat8 and tomcat8-admin
+
+  apt:
+
+   name: "{{item.a}}"
+
+   state: "{{item.b}}"
+
+   update_cache: "{{item.c}}"
+
+  with_items:
+
+   - {a: "{{pkg1}}",b: "{{state1}}",c: "{{cache1}}"}
+
+   - {a: "{{pkg2}}",b: "{{state1}}",c: "{{cache2}}"}
+
+...
+
+
+
+d) sudo vim configure.yml
+
+---
+
+- name: Copy tomcat-user.xml 
+
+  copy:
+
+   src: "{{file1}}"
+
+   dest: "{{destination1}}"
+
+- name: Change port of tomcat from 8080 to 9090
+
+  replace:
+
+   path: "{{path1}}"
+
+   regexp: "{{port1}}"
+
+   replace: "{{port2}}"
+
+  notify:
+
+   - check_url_response
+
+...
+
+
+
+e) sudo vim restart.yml
+
+---
+
+- name: Restart tomcat8
+
+  service:
+
+   name: "{{pkg1}}"
+
+   state: "{{state3}}"
+
+...
+
+4) Create the handlers
+
+   cd ..
+   cd handlers
+
+   sudo vim main.yml
+
+---
+
+# handlers file for tomcat
+
+- name: check_url_response
+
+  uri:
+
+   url: "{{item.a}}"
+
+   status: "{{item.b}}"
+
+  with_items:
+
+   - {a: "{{server1}}",b: "{{status1}}"}
+
+   - {a: "{{server2}}",b: "{{status1}}"}
+
+...
+
+
+5) create static files
+
+   cd ..
+   cd files
+
+  a)   sudo vim tomcat-users.xml
+   <tomcat-users>
+    <user username="intelliq" password="myintelliq" roles="manager-                                                                                script"/>
+  </tomcat-users>
+
+  Save and quit
+
+ 
+6) Define the variables
+   cd ..
+   cd vars
+   sudo vim main.yml
+---
+# vars file for tomcat
+pkg1: tomcat8
+pkg2: tomcat8-admin
+state1: present
+state2: absent
+state3: restarted
+cache1: yes
+cache2: no
+file1: tomcat-users.xml
+destination1: /etc/tomcat8
+server1: http://172.31.87.8:9090
+server2: http://172.31.84.59:9090
+status1: 200
+status2: -1
+path1: /etc/tomcat8/server.xml
+port1: 8080
+port2: 9090
+...
+
+7 Come out of the tomcat roles
+  cd ../..
+
+8 Create a playbook to call that role
+  sudo vim configure_tomcat.yml
+---
+- name: Configuring tomcat using roles
+  hosts: all
+  roles:
+   - tomcat
+...
+
+9 To run the playbook for the above role
+  ansible-playbook configure_tomcat.yml -b
+
+
+========================================================================
+Day 14
+=========================================================================
+Ansible playbook to install on docker and docker-py
+
+---
+- name: Setup of docker for Ansible
+  hosts: all
+  tasks:
+   - name: Install pip
+     apt:
+      name: python-pip
+      state: present
+      update_cache: yes
+   - name: Download and  install docker and also docker-py
+     shell: "{{item}}"
+     with_items:
+      - curl -fsSL https://get.docker.com -o get-docker.sh
+      - sh get-docker.sh
+      - pip install docker-py
+...
+
+Ansible playbook to start stop and delete a container
+---
+- name: Working on docker containers
+  hosts: all
+  tasks:
+   - name: Start a httpd container
+     docker_container:
+      image: httpd
+      name: h1
+   - name: Stop the httpd container
+     docker_container:
+      name: h1
+      state: stopped
+   - name: Delete the httpd container
+     docker_container:
+      name: h1
+      state: absent
+...
+
+
+Ansible playbook to create 10 nginx containers
+---
+- name: Start 10 nginx contianers on all maanged nodes
+  hosts: all
+  tasks:
+   - name: Create 10 nginx
+     docker_container:
+      image: nginx
+      name: "container{{item}}"
+     with_sequence: count=10
+...
+
+=======================================================
+
+Ansible playbook to implement docker compose on managed nodes
+---
+- name: Implementing docker compose using Ansible
+  hosts: all
+  tasks:
+   - name: Create a mysql container
+     docker_container:
+      name: mydb
+      image: mysql:5
+      env:
+       MYSQL_ROOT_PASSWORD: intelliqit
+
+   - name: Create a wordpress container
+     docker_container:
+      name: wordpress
+      image: wordpress
+      ports:
+       - 5555:80
+      links:
+       - mydb:mysql
+...
+
+
+===========================================================================
+---
+- name: Creating jenkins-tomcat setup for  CI-CD using docker/ansible
+  hosts: all
+  tasks:
+   - name: Create a jenkins contianer
+     docker_container:
+      image: jenkins
+      name: myjenkins
+      ports:
+       - 5050:8080
+
+   - name: Create a tomcat for QAServer and ProdServer
+     docker_container:
+      image: tomcat
+      name: "{{item.a}}"
+      ports:
+       - "{{item.b}}"
+      links:
+       - myjenkins:jenkins
+     with_items:
+      - {a: qaserver,b: "6060:8080"}
+      - {a: prodserver,b: "7070:8080"}
+
+=======================================================================
+---
+- name: Create an ubuntu container and mount a volume
+  hosts: all
+  tasks:
+   - name: Create a ubuntu container
+     docker_container:
+      name: myubuntu
+      image: ubuntu
+      volumes:
+       - /data
+      interactive: yes
+      tty: yes
+======================================================================
+---
+- name: Ansible playbook to Download docker images
+  hosts: all
+  tasks:
+   - name: Docker docker images
+     docker_image:
+      name: "{{item}}"
+     with_items:
+      - httpd
+      - nginx
+      - centos
+      - jenkins
+...
+
+============================================================================
+---
+- name: Login into hub.docker.com and push a customised docker image
+  hosts: 172.31.36.172
+  tasks:
+   - name: Login into docker hub
+     docker_login:
+      username: sai
+      password: sai123
+      email: intelliqit@gmail.com
+   - name: Push the image
+     docker_image:
+      name: intelliqit/ubuntu_july16
+      push: yes
+
+============================================================================
+---
+- name: Login into hub.docker.com and push a customised docker image
+  hosts: 172.31.36.172
+  tasks:
+   - name: Login into docker hub
+     docker_login:
+      username: sai
+      password: sai123
+      email: intelliqit@gmail.com
+   - name: Push the image
+     docker_image:
+      name: intelliqit/ubuntu_july16
+      push: yes
+
+Ansible playbook to intitilze the docker swarm
+
+- name: Initilise the docker swarm on manager
+  hosts: manager
+  tasks:
+   - name: Create docker swarm
+     docker_swarm:
+      state: present
+
+To generate the toke id for workers to joun swarm
+ansible manager -m shell -a 'docker swarm join-token worker' -b
+
+Playbook to add workers to the swarm
+---
+- name: Join workers to the swarm cluster
+  hosts: workers
+  tasks:
+   - name: Join workers to swarm
+     docker_swarm:
+      state: join
+      advertise_addr: 172.31.37.220
+      join_token: SWMTKN-1-33hmtvum9qegdk4t1gnn869by61mpsr49w1jkszvt6z18xfw0r-22f59e3w9xu46wsdwkqlce2zo
+      remote_addrs: [ '172.31.37.220:2377' ]
+
+==============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+  

@@ -1,0 +1,575 @@
+Day 1
+==================================================================
+Version Controlling
+===========================
+This is the process of maintining multiple versions of code
+All the team members upload their code(checkin) into a remote
+Version Controlling system(VCS).This VCS accepts the code
+uploads from mulitple team members and integrates that as one 
+project.Next time when the team members download the code they
+will be able to access the code created by the entire team
+
+VCS's also preserve the older and later versions of the code
+so that at any pointof time we can switch between whichever
+version we want
+
+VCS's also keep a track of who is making what kind of changes
+at what time
+
+VCS's are of 2 types
+========================
+1 Centralised Version Controlling System
+2 Distributed Version Controlling System
+
+Centralised Version Controlling System
+===========================================
+Here we  have a central repository into which the team members
+upload the code and all the features of version contolling happen
+only on this remote server.Eg: SVN
+
+Distributed Version Controlling System
+=============================================
+Here we have a local repository into which the code is initially 
+uploaded where version controlling happens at the level of
+inidividual team members and later it will be uploaded to a remote
+server where version controlling happens at the level of the entire
+team
+
+Installing git on windows
+============================
+1 Open https://git-scm.com/downloads
+
+2 Download and install git
+
+Installing git on Ubuntu Linux
+===================================
+1 Update the apt repository
+  sudo apt-get update
+
+2 Install git
+  sudo apt-get install -y git
+
+Installing git on RHEL,Centos etc
+=====================================
+1 Update the yum repository
+  yum -y update
+
+2 Install git
+  yum -y install git
+
+====================================================================
+Git on the local machine uses three section
+working dir,stagging area and local repository
+
+Working dir or workspace
+==============================
+This is the folder where the code is created and initially all the files
+present here are called a untracked files
+
+Stagging area
+==================
+This is the buffer zone of git into which the files move before being
+sent to the local repository,the files present here are called 
+indexed files
+
+Local repository
+=====================
+Files from the stagging area move to the local repository where
+version controlling happens and files here are called as commited files
+
+=======================================================================
+
+Setting up username and emil globally
+---------------------------------------------
+git config --global user.name "sai krishna"
+git config --global user.email "intelliqittrainings@gmail.com"
+
+To see the list of configuration done
+git config --global --list
+
+=====================================================================
+1 To initilise the current folder as a git repo
+  git init
+  This will create a hidden folder called as .git and here it
+stores all the configurations that are necessary for git to run
+
+2 To send a file into the stagging area
+  git add filename
+  To send multiple files
+  git add file1 file2 file3
+  To send all files and folder
+  git add .
+  Note  . represents current working directory
+
+3 To bring files back from stagging area to untracked section
+  git rm --cached filename
+  or
+  git reset filename
+
+4 To send all the files from stagging area to the local repository
+  git commit -m "some msg"
+
+5 To see the status of files in untracked and stagging area
+  git status
+
+6 To see the list of commits in the local repository
+  git log
+  To see the above output in one line format
+  git log --oneline
+
+===================================================================
+Day 2
+===================================================================
+.gitignore:This is a special configuration file which is used
+to hide the private files info.Any file whose name is mentioned
+in .gitignore will no longer be accessed by git
+
+1 Create few files
+  touch f1 f2 f3 f4 f5
+
+2 Check the status of git
+  git status
+  This will show the above 5 files as untracked files
+
+3 Create .gitignore and store the above 5 file names in it
+  cat > .gitignore
+  f1
+  f2
+  f3
+  f4
+  f5
+  To come out of cat command press ctrl+d  
+
+4 Check the status of git
+  git status
+  This will only show .gitignore as untracked
+  f1-f5 are no longer accessable by git
+
+
+
+==============================================================================
+Branching in Git
+========================
+This is a feature of git using which we can create seperate branches
+for different functionalites and later merge them with the main branch
+also known as the master branch.This will help in creating the code in
+an uncluttered way
+
+1 To see the list of local branches
+  git branch
+
+2 To see the list all branches local and remote
+  git branch -a
+
+3 To create a branch
+  git branch branch_name
+
+4 To move into a branch
+  git checkout branch_name
+
+5 To create a branch and also move into it
+  git checkout -b branch_name
+
+6 To merge a branch
+  git merge branch_name
+
+7 To delete a branch that is merged
+  git branch -d branch_name 
+  This is also called as soft delete
+
+8 To delete a branch that is not merged
+  git branch -D branch_name
+  This is also known as hard delete
+
+============================================================================
+Note: Whenever a branch is create whatever is the commit history of the 
+parent branch will be copied into the new branch
+
+Note: Irrespective of, on which branch a file is created or modified git only
+considers form which branch it is commited and the file belongs to that
+commited branch only.
+
+============================================================================
+Working on the Github
+=========================
+This is the remote repository into which the code is uploaded and
+this process is called as checkin
+
+1 Singup for a github account
+2 Signin into that account
+3 Click on + on top right corner
+4 Click on New repository
+5 Enter some repository name
+6 Select Public or Private
+7 Click on Create repository
+8 Go to Push an existing repository from command line and copy paste
+  the commands
+  Enter username and password of github
+
+========================================================================
+Day 3
+==========================================================================
+Downloading the code from the remote github
+===============================================
+This can be done in three ways 
+git clone
+git fetch
+git pull
+
+=============================================================
+git clone
+===============
+This will download all the code from the remote repository
+into the local repository and it is generally used only once
+when all the team members want a copy of the same code
+
+Syntax: git clone remote_git_repo_url
+
+git fetch
+==================
+This will download only the modified files but it will place
+them on a seperate branch called as "remote branch",we can go into
+this remote branch check if the modificatios are accpetable and then
+merge it with the main branch
+
+1 Open the github
+2 Go to the repository that we uploaded
+3 Select a file and edit it--->Click on commit changes
+4 Open git bash
+5 git fetch
+6 To see the name of remote branch
+  git branch -a
+7 To switch into this branch
+  git checkout branch_name_from_step6
+8 View the modified file
+  cat filename
+9 If these modifications are ok then merge with main branch
+  git checkout main
+  git merge branch_name_from_step6
+
+
+=====================================================================
+git pull
+===================
+This will download only the modified files and merge them with
+our local branches
+1 Open the github
+2 Go to the repository that we uploaded
+3 Select a file and edit it--->Click on commit changes
+4 Open git bash
+5 git pull
+  We can see the modified files on the main branch
+
+=======================================================================
+
+
+Git merging and rebasing
+====================================
+Merging always happens based on the time stamp of the commit
+
+1 Create few commits on master
+  touch f1
+  git add .
+  git commit -m "a"
+  touch f2
+  git add .
+  git commit -m "b"
+
+2 Check the commit history
+  git log --oneline
+
+3 Create a test branch and create few commits on it
+  git checkout -b test
+  touch f3
+  git add .
+  git commit -m "c"
+  touch f4
+  git add .
+  git commit -m "d"
+
+4 Check the commit history
+  git log --oneline
+
+5 Move to amster and create few more commits
+  touch f5
+  git add .
+  git commit -m "e"
+  touch f6
+  git add .
+  git commit -m "f"
+
+6 Check the commit history
+  git log --oneline
+
+7 Merge test with master
+  git merge test
+
+8 Check the commit history
+  git log --oneline
+
+
+Rebase is also called a "fastfoward merge"  and this used when
+we want the commits from a branch to be projected as the top most 
+commits
+
+1 Repeate Step1-6 from above scenario
+
+2 To rebase test with master
+  git checkout test
+  git rebase master
+  git checkout master
+  git merge test
+
+3 Check the commit history
+  git log --oneline
+
+
+
+=============================================================
+Day 4
+=============================================================
+Cherry pick
+=====================
+This feature allows us to selectively pick only certain
+commits and add them to the master branch
+
+1 Create a commit on master
+  touch f1
+  git add .
+  git commit -m "a"
+
+2 Create a  new branch and create few commits on it
+  git checkout -b test
+  touch f2
+  git add .
+  git commit -m "b"
+  touch f3
+  git add .
+  git commit -m "c"
+  touch f4
+  git add .
+  git commit -m "d"
+  touch f5
+  git add .
+  git commit -m "e"
+
+3 Check the commit history
+  git log --oneline
+
+4 Identify the commits that we want to bring to master
+  git checkout master
+  git cherry-pick commit_id1 commit_id2
+==============================================================================
+git reset
+=====================
+This is used to toggle between multiple versions of the code
+
+This is of three types
+1 hard reset
+2 soft reset
+3 mixed reset
+
+1 Hard reset
+  This will move the HEAD to an older commit and also it will 
+  show the data as it was present at the time of that older commit
+
+2 Create a file and multiple commits on that file
+  file1 --->   one--->commit a
+
+  file1 --->  one,two --->commit b
+ 
+  file1 ----> one,two,three ----> commit c
+
+3 To reset to b commit
+  git reset --hard b_commitid
+  If we open the file1 we will see the data as present at the time
+  of b commit
+  
+====================================================================
+Day 5
+====================================================================
+===========================================================================
+Git stashing
+======================
+Stash is a section of git into which once the files are pushed 
+git cannot access them
+
+To stash all the files present in the stagging area
+git stash 
+
+To stash all files present in stagging area and untracked section
+git stash -u
+
+To stash all files present in stagging area,untracked section and .gitignore
+git stash -a
+
+To see the list of stases
+git stash list
+
+To unstash a latest stash
+git stash pop
+
+To unstash an older stash
+git stash pop stash@{stashno}
+==============================================================================
+Git tagging
+================
+This is used to place book marks on important commits
+Generally it used to identfy the commits that are related to
+release events
+
+Tags are classifed into 2 types
+1 Light weight tags
+2 Annoted Tags
+
+Light weight tags
+======================
+These tags only have a tage name
+To create a light weight tag to the latest commit
+git tag some_tag_name
+
+To create a light weight tag to an older commit
+git tag some_tag_name older_commit_id
+
+To create an annoted tag to the latest commit
+git tag -a "some_tag_name" -m "some msg related to the tag"
+
+To create an annoted tag for an older commit
+git tag -a "some_tag_name" -m "some msg related to the tag" older_commit_id
+
+To see the list of all tags
+git tag
+
+To push the tags into remote github
+git push --tags
+
+To delete a tag locally
+git tag -d tagname
+
+To delete a tag from remote github
+git push origin :tag_name
+
+==========================================================
+========================================================================
+Modifing exisiting commits
+================================
+We can add content to an exisiting commit without 
+creating a new commit using "amend"
+
+1 Create few commits
+  a ---> b ---> c
+  HEAD is pointing to c commit
+
+2 Create a new file and add it to the c commit
+  touch file2
+  git add .
+  git commit --amend -m "c"
+
+3 Check the commit history
+  git log --oneline
+  It will show only 3 commits
+  a--->b--->c
+
+4 The older c commit is removed from the acitve git structure
+  and it is called as an orphaned commit
+  git reflog
+  This will show all the commits(active and orphaned)
+
+===========================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+

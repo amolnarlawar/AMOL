@@ -1,0 +1,536 @@
+Setup of Ansible
+======================
+1 Create 4 AWS ubuntu instances
+2 Name the first one as Controller and the remainign as Server1,Server2 etc
+
+3 Downgrade python from python3 to python2.7 on all these  AWS instances
+  a)Connect to any of the 4 aws instances using git bash
+  b) Update the apt repository
+     sudo apt-get update
+  c) Downgrade the apt repository
+     sudo apt-get -y dist-upgrade
+  d) Install python2.7 and python-pip
+     sudo apt-get install -y python2.7 python-pip
+  Repeat Step no 3 on all managed nodes
+
+4 Establish passwordless ssh between Controller and managed nodes
+  a)Connect to Server1 uisng gitbash
+  b) Set a password for the ubuntu user
+     sudo passwd ubuntu
+  c) Edit the ssh config file
+     sudo vim /etc/ssh/sshd_config
+     Search for "PasswordAuthentication" and change it from no to yes
+  d) Restart ssh
+     sudo service ssh restart
+     Repeat Step no 4 on Server2 and also Server3
+
+5 Connect to Controller using git bash
+  a) Generate the ssh keys
+     ssh-keygen
+  b) copy the ssh keys 
+     ssh-copy-id ubuntu@private_ip_of_all_managed_nodes
+
+6 Installing Ansible on Controller
+  a) Update the apt repository
+     sudo apt-get update
+  b) Install software-properties-common
+     sudo apt-get install software-properties-common
+  c) Add latest ansible ppa to the apt repository
+     sudo apt-add-repository ppa:ansible/ansible
+  d) update the apt repository
+     sudo apt-get update
+  e) Install ansible
+     sudo apt-get install -y ansible
+
+
+sudo vim /etc/ansible/hosts
+
+
+command
+shell
+ping
+user
+copy
+fetch
+file
+apt
+yum
+service
+git
+uri
+stat
+debug
+include
+
+
+
+
+Day 1
+==================================================================
+
+Ansible Docker Integrations
+=================================
+Ansible playbook to setup docker on all machines
+---
+- name: Setup of Docker
+  hosts: all
+  tasks:
+   - name: Install python-pip
+     apt:
+      name: python-pip
+      state: present
+      update_cache: yes
+   - name: Download docker script and install docker and install docker-py
+     shell: "{{item}}"
+     with_items:
+      - curl -fsSL https://get.docker.com -o get-docker.sh
+      - sh get-docker.sh
+      - pip install docker-py
+...
+
+===========================================================================
+Ansible playbook to start stop and delete a tomcat container
+---
+- name: Working on containers
+  hosts: all
+  tasks:
+   - name: Start a tomcat container
+     docker_container:
+      image: tomcat
+      name: webserver
+   - name: Stop the tomcat container
+     docker_container:
+      name: webserver
+      state: stopped
+   - name: Remove the tomcat container
+     docker_container:
+      name: webserver
+      state: absent
+...
+
+===========================================================================
+Ansible playbook to create multiple nginx containers on all servers
+---
+- name: Create 10 nginx contianers for load balancing
+  hosts: all
+  tasks:
+   - name: Create 10 containers
+     docker_container:
+      image: nginx
+      name: "container{{item}}"
+     with_sequence: count=10
+...
+
+=============================================================================
+---
+- name: Create an ubuntu container and mount a volume
+  hosts: all
+  tasks:
+   - name: Create a ubuntu container
+     docker_container:
+      name: myubuntu
+      image: ubuntu
+      volumes:
+       - /data
+      interactive: yes
+      tty: yes
+
+==========================================================================
+Ansible playbook to create a multi container architecture on all managed nodes
+---
+- name: Implementing docker compose using Ansible
+  hosts: all
+  tasks:
+   - name: Create a mysql container
+     docker_container:
+      image: mysql:5
+      name: db
+      env:
+       MYSQL_ROOT_PASSWORD: intelliqit
+
+   - name: Create a wordpress container and link it with the mysql container
+     docker_container:
+      image: wordpress
+      name: mywordpress
+      ports:
+       - 8888:80
+      links:
+       - db:mysql
+...
+
+
+================================================================================
+---
+- name: Creating jenkins-tomcat setup for  CI-CD using docker/ansible
+  hosts: all
+  tasks:
+   - name: Create a jenkins contianer
+     docker_container:
+      image: jenkins
+      name: myjenkins
+      ports:
+       - 5050:8080
+
+   - name: Create a tomcat for QAServer and ProdServer
+     docker_container:
+      image: tomcat
+      name: "{{item.a}}"
+      ports:
+       - "{{item.b}}"
+      links:
+       - myjenkins:jenkins
+     with_items:
+      - {a: qaserver,b: "6060:8080"}
+      - {a: prodserver,b: "7070:8080"}
+
+=======================================================================
+
+======================================================================
+---
+- name: Ansible playbook to Download docker images
+  hosts: all
+  tasks:
+   - name: Docker docker images
+     docker_image:
+      name: "{{item}}"
+     with_items:
+      - httpd
+      - nginx
+      - centos
+      - jenkins
+...
+
+============================================================================
+
+Syntax of Adhoc commands
+--------------------------------------
+ansible all/ipaddress/group_name  -i path_of_inventory -m module_name 
+                                                            -a '          ' 
+
+
+Command Module
+==================
+Ansible command to see the memory information of all managed nodes
+ansible all -i /etc/ansible/hosts -m command -a 'free m'
+
+/etc/ansible/hosts is the default inventory file and when using it
+we need not give -i
+ansible all  -m command -a 'free m'
+
+command module is the default module os ansible and we need not  use
+-m option when working on command module
+ansible all   -a 'free m'
+
+====================================================================
+Shell Module
+-----------------
+Ansible commands to downlaod the docker script and execute it to install docker
+ansible all -m shell -a ' curl -fsSL https://get.docker.com -o get-docker.sh'
+
+ansible all -m shell -a 'sh get-docker.sh'
+
+--------------------------------------------------------------------------
+Ansible command to capture memory statics into a file called as file1
+ansible all -m shell -a 'free -m > file1'
+
+=====================================================================
+User Module
+=================
+Ansible command to create a user and assign a password
+ansible all -m user -a 'name=sai password=intelliqit' -b
+
+Ansible command to create a user,assign home dir,default shell
+uid,comment etc
+ ansible all -m user -a 'name=Anu password=intelliqit 
+          home=/home/ubuntu/Anu uid=12345 shell=/bin/bash 
+                                     comment="A normal user"' -b
+
+-------------------------------------------------------------------
+Ansible command to create file on all managed nodes
+ansible all -m file -a 'name=/tmp/file1 state=touch'
+
+state=touch    create files
+state=directory creates directories
+state=absent    delete files/directories
+
+========================================================================
+Day 3
+===========================================================================
+Ansible command to create file and also specify the owner,group owner
+and permissions
+ansible all -m file -a 'name=/tmp/file1 state=touch owner=sai 
+                                                group=Anu mode=750' -b
+
+
+===========================================================================
+Ansible command to copy /etc/passwd file to all managed nodes
+ ansible all -m copy -a 'src=/etc/passwd dest=/tmp'
+
+Create a chain of directories on the controller and copy all that to
+the managed nodes
+mkdir -p d1/d2/d3/d4/d5
+ansible all -m copy -a 'src=d1 dest=/home/ubuntu'
+
+Copy module can also change the permissions,ownership and group ownership
+of files that are copied
+ansible all -m copy -a 'src=file1 dest=/tmp owner=root 
+                                                  group=sai mode=700' -b
+
+=========================================================================
+Ansible command to install git on all managed nodes
+ansible all -m apt -a 'name=git state=present' -b
+
+state=present is for installation
+state=absent is for uninstallation
+state=latest  is for upgrading to a later version
+
+To update the apt repository we can use
+update_cache-yes
+Ansible command to install tomcat9 after updating the apt repository
+ansible all -m apt -a 'name=tomcat9 state=present update_cache=yes' -b
+
+========================================================================
+Service module
+===================
+Ansible command to restart tomcat on all managed nodes
+ ansible all -m service -a 'name=tomcat9 state=restarted' -b
+
+state=restarted is for restarting
+state=stopped is for stopping
+state=started is for starting 
+
+========================================================================
+Fetch Module
+=====================
+Ansible command to copy /etc/group file from all managed nodes to controller
+ ansible all -m fetch -a 'src=/etc/group dest=/tmp'
+
+==========================================================================
+Git Module
+================
+Ansible command to clone a remote git repository into all managed nodes
+ansible all -m git -a 'repo=https://github.com/intelliqittrainings/maven.git                                                      dest=/tmp/git'
+
+
+==========================================================
+ansible all -m command -a 'uptime' 
+---
+- name: uptime
+  hosts: all
+  tasks:
+   - name: uptime module
+     command: uptime
+   
+...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

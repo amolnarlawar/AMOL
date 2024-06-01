@@ -1,0 +1,249 @@
+Linux
+=========================================
+Day 1
+========================================
+1 To see the use who is currently logged in
+  whoami
+
+2 To see all the users logged into the linux server
+  who
+
+3 To create directories
+  mkdir dir1
+
+4 To create multiple directories one within another
+  mkdir -p d1/d2/d3/d4
+
+5 To remove an empty directory
+  rmdir dir_name
+
+6 To remove a directory which has files and sub directories
+  rm -r dir_name
+
+7 To move from one dir to another
+  cd dirname
+  Note   . represents current directory
+        .. represents parent directory
+        ~ represents home direcotry of current user
+        Eg: cd ~   will take control to home dir of current user
+
+8 To create files
+  touch file1
+
+9 To create multiple files
+  touch file1 file2 file3
+  Note: touch creates emptyr files.It can also be used for
+  updating the time stamp of files
+
+10 To create files that can store some data
+  cat > filename
+  Enter some data in the file
+  To come out of cat command (ctrl+d) This represents EOF
+
+  a) cat create a new file if the file is already not present
+  b) it will overwrite the content of the exisiting file if
+    file is already present
+
+11 To see the content of a file
+  cat filename
+
+12 To append data to an exisiting file
+   cat >> filename
+   enter some data
+   ctrl+d
+
+13 To remove a file
+   rm filename
+
+
+14 To find home dir of current user
+   echo $HOME
+
+==========================================================================
+
+=
+To see the list of all files in present working dir
+  ls
+
+To see long listing of files
+  ls -l  (it shows all the meta data realted to the file)
+
+To see the files (visible and hidden)
+ls -a
+
+===================================================================
+Day 2
+================================================================
+
+To see the size of the files in human readable format
+  ls -lh
+
+To see the inode numbers of the files
+  ls -li
+
+To see the files based on their time stamps
+  ls -lt
+
+To see the files after reversing the time stamps
+   ie older files first
+  ls -ltr
+
+To see the files recursively present in a dir
+   ls -lR
+
+========================================================================
+
+1 To copy files
+  cp srcfile destfile
+
+2 to copy directories
+  cp -R srcdir destdir
+
+If the destination file is not present cp will create a new file
+If the destination file is present cp will overwrite the file
+
+3 To rename or move files
+  mv srcfile destfile
+  mv works like cut paste
+
+==================================================================
+Day 3
+==================================================================
+==================================================================
+
+Linking of files
+----------------------
+Linking is of 2 types
+1 Soft link
+2 Hard Link
+
+Soft link is similar to a shortcut in windows.This is created for easy access of the files present at some remote loaction.If the original file is delete the shortcut is of no use
+
+ln -s file1 file2
+file2 is created as a shotcut for file1
+
+Hard link will work even if the original file is deleted
+ln file1 file3
+file3 become hardlink file for file1
+ls -li will display the same inode number for
+both file1 and file3 and the link count will be 2
+even if we delete the original file still we can access the date
+rm file1
+cat file3
+
+================================================================================
+Text Processing Tools
+--------------------------
+1 less
+  This is used to display the text in pagewise format
+  less filename
+
+============================================================================
+Day 4
+============================================================================
+
+
+
+
+
+
+Top
+========
+top
+To exit after 10 refreshes
+top -n 10
+
+To display processes of a user
+top -u sai
+
+df
+=======
+To display all the file systems
+df -a
+
+To see the size in 1024 multiples
+df -f /home/ubuntu
+
+To see the grand total
+df --total
+
+To see the file fromat
+df -T /home/ubuntu
+
+du
+======
+du
+
+du -h /etc
+
+netstat
+=============
+Listing all ports tcp and udp
+netstat -a
+
+Only tcp port connections
+netstat -at
+
+Only udp port connections
+netstat -au
+
+
+
+
+Creating users
+======================
+sudo useradd username
+
+To create user with different home directory
+useradd -d /tmp/d1 username
+
+To create a user with a specific uid
+useradd -u 2222 username
+
+Create a user with an expiry date
+useradd -e 2020-04-30 username
+
+To see this info
+chage -l username
+
+To create user with customised comments
+useradd -c "some msg" username
+
+To specify a shell
+useradd -s /sbin/nologin username
+
+=======================================================================
+Creating groups
+---------------------
+groupadd groupname
+To add a new user to a group
+useradd -g groupname username
+To add an exisiting user to a group
+usermod -d groupname username
+
+
+
+export   used to display all env variables
+
+free -m
+free -G
+free -T
+
+
+top
+
+top -u username
+
+df -h
+df -T  fileystems will be shown
+
+
+
+
+
+
+
+
+
+
+
