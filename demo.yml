@@ -1,0 +1,8 @@
+---
+-  hosts: all
+   tasks:
+     - name: Clone a repo with separate git directory
+       ansible.builtin.git:
+        repo: https://github.com/ansible/ansible-examples.git
+        dest: /tmp/ansible-examples
+        separate_git_dir: /tmp/ansible-examples.git
