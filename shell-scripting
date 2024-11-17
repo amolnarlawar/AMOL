@@ -1,0 +1,725 @@
+======================
+Linux Architecture
+======================
+
+=> Linux is free OS & open source
+
+=> Multi User based os
+
+=> Linux is secured
+
+=> Linux is CLI based os
+
+=> Linux is highly recommended for project related servers 
+
+	Ex: Database, docker, sonar, jenkins, nexus, k8s....
+
+
+================================
+Linux Architecture Components	
+===============================
+
+1) Applications / Commands
+
+2) Shell
+
+3) Kernel
+
+4) Hardware components
+
+===================
+What is shell ?
+===================
+
+=> Shell acts as mediator between user and kernel. 
+
+=> Shell is responsible to process user given commands.
+
+Note: when we execute a command, shell verify command syntax. If commad is valid then shell will convert that command into kernel understable format.
+
+# check default shell of our linux vm
+$ echo $SHELL
+
+# display all shells supported by linux vm
+$ cat /etc/shells
+
+==========================
+What is Kernel in linux ?
+==========================
+
+=> Kernel is heart of Linux OS
+
+=> Kernel is a mediator between SHELL and Hardware components.
+
+=> Kernel will get instructions from shell then kernel will convert that command into hardware understandable format.
+
+# print kernel version
+$ uname -r
+
+======================
+What is scripting ?
+======================
+
+=> Scripting means set of commands we are keeping in a file for execution.
+
+=> Scripting is used to automate our daily routine work
+
+=> For example, i want to execute below commands on daily basis
+
+        whoami
+        pwd
+        date
+        cal
+        ls -l
+
+Note: instead of executing these commands one after other manually we can keep them inside a file and we can execute that file which is called as Scripting.
+
+=> The process of executing script file using shell is called as shell scripting.
+
+=> Shell scripting is used to automate our daily routine works in the project.
+
+		Ex: 
+			a) take backup
+			b) delete temp files
+			c) analyze log files
+			d) system health checks
+
+=> shell script files will have .sh extension
+
+	ex : backup.sh, log-analyzer.sh, health-checks.sh
+
+====================================================
+What is difference between programming & scripting
+====================================================	
+
+=> Program requies compilation for executing
+
+	Ex: C, C++, Java, C#
+
+=> Script can be executed directley (no compilation).
+
+	Ex : Bash, Perl, Python
+
+============================
+what is sha-bang in linux ?
+============================
+
+=> sha-bang is used to specify which shell we should use to process our script file.
+
+syntax:    
+
+#! /bin/bash
+
+Note: Writing sha-bang is not mandatory but recommended.
+
+
+##################################################################################
+		Date : 19-July-2024
+		Topic : Shell Scripting
+##################################################################################
+
+
+============= 01 : Shell Script ===========
+
+#! /bin/bash
+
+echo "Enter your name"
+
+read NAME
+
+echo "Good Evening, $NAME"
+
+============ 02 : Shell Script =============
+
+#! /bin/bash
+
+echo "Enter your first name"
+
+read FNAME
+
+echo "Enter your last name"
+
+read LNAME
+
+echo "Your Fullname : $FNAME $LNAME"
+
+
+===========
+Variables
+===========
+
+=> Variables are used to store the values
+
+=> Variables will represent data in key-value format
+
+		a=10
+		b=20
+		name=ashok
+		gender=male
+		age=20
+
+Note: We don't have data types in shell scripting.
+
+=> We have 2 types of variables
+
+        1) System Variables / Environment Variable
+
+        2) User Defined Variables
+
+=> The variables which are already defined and using by our system are called as System variables.
+
+        $ echo $SHELL
+
+        $ echo $USER
+
+        $ echo $PATH
+
+Note: We can access all the environment variables using below command
+
+        $ env
+
+=> The variables which we are creating based on our requirement are called as 'User Defined Variables'.
+
+            name = ashok
+            id = 101
+            age = 25
+            gender = male  
+
+Note : To access value of variable we will use below syntax
+
+            echo $VARIABLE_NAME
+
+# create variable using terminal
+export course=devops
+
+# get variable value
+echo $course
+
+# remove variable
+unset variable_name
+
+Note: If we use export command in terminal for setting variables then those variables will be removed once we close our terminal. These are called as temporary variables. 
+
+====================================
+How to set variables permanently ?
+====================================
+
+=> We will use .bashrc file to set variables permanently for the user.
+
+=> In user home directory, .bashrc file will be available (it is hidden file).
+
+		$ ls -la
+        $ cat .bashrc
+
+# open .bashrc file
+vi .bashrc
+
+# add variables at end of the file
+COURSE=devops
+TRAINER=ashok
+
+# apply .bashrc changes
+source .bashrc
+
+# Access variables
+echo $COURSE
+echo $TRAINER
+
+Note: In linux machine, every user will contain their own .bashrc file.
+
+================================================
+How to set variables for all users in linux ?
+=================================================
+
+$ cat /etc/profile
+
+Note: If we add variables in /etc/profile then those variables applicable for all users in linux vm.
+
+==========================
+Rules for Variables name
+==========================
+
+=> Variable name should not start with digit
+
+=> Variable name should not contain below 3 special symbols
+
+		Ex : - (hypen), @, #
+
+Note: It is recommended to use uppercase characters for variable names.
+
+		name ==> NAME
+		age ==> AGE				
+
+============
+Operators
+============	
+
+=> Operators are used to perform some operation on the variables.
+
+		10 + 20 => 30
+
+		10 > 20 => false
+
+		20 == 20 => true
+
+========================
+Arithematic Operators
+========================
+
+Addition : + 
+
+Substraction : -
+
+Multiplication : *
+
+Division : /
+
+Modulas : %		
+
+
+Syntax to perform Arithematic Operations :
+
+		$((FNUM+SNUM))
+
+
+================== 03 : Script (addition) ================
+
+#! /bin/bash
+
+echo "Enter first number"
+
+read FNUM
+
+echo "Enter second number"
+
+read SNUM
+
+echo "Result : $((FNUM+SNUM))"
+
+
+===================================
+Relational/Comparision Operators
+===================================
+
+Equal :  == or eq
+
+Not Equal :  !=
+
+Greater than : > or gt or ge
+
+less than : < or lt or le
+
+========================
+Conditional Statements
+========================
+
+=> Conditional statements are used to execute commands based on condition.
+
+Ex : 
+
+read user age
+if age is above 18 years then print eligible for vote
+if age is below 18 years then print not-elgible for vote
+
+=> To implement conditional stmts we will use "if-elif-else" concept.
+
+Syntax:
+
+if [ conditon-1 ]; then
+	// stmt-1
+
+elif [ conditio-2 ]; then
+	// stmt-2
+
+else
+	// stmt-3	
+
+fi		
+
+
+============== 04 : Script (if-else) =================
+
+#! /bin/bash
+
+echo "Enter Your age"
+read AGE
+
+if [ $AGE -ge 18 ]; then
+   echo "Eligible for vote"
+else
+     echo "Not Eligible for vote"
+fi
+
+==================================================================================
+
+Requirement : Take a number from user and check weather it is positive or negative or zero
+
+========================= 05 - Script =======================================
+
+#! /bin/bash
+
+echo "Enter Number"
+read A
+
+if [ $A -gt 0 ];then
+  echo "It is +ve num"
+
+elif [ $A -lt 0 ];then
+  echo "It is -ve num"
+
+else
+   echo "It is zero"
+fi
+
+==============================================================================
+Requirement : Take a number from user and check given number is even or odd
+==============================================================================
+
+##################################################################################
+						Date : 23-July-2024
+						Topic : Shell Scripting
+##################################################################################
+
+-------------------
+Looping Statements
+-------------------
+
+=> Loops are used to execute statements multiple times.
+
+=> In scripting we can use 2 types of loops
+
+		1) Range Based Loop (ex: for)
+
+		2) Conditional Based Loop (ex: while)
+
+
+---------
+for loop
+----------
+
+for(( initialization; condition; modification ))		
+do
+ //stmts
+done 
+
+================================================
+For loop example - Print Numbers from 1 to 10
+================================================
+
+#! /bin/bash
+
+for((i=1; i<=10; i++))
+do
+ echo $i
+done
+
+================================================
+For loop example - Print Numbers from 10 to 1
+================================================
+
+#! /bin/bash
+
+for((i=10; i>=1; i--))
+do
+ echo $i
+done 
+
+==========================================================================
+Requiremnt: Write shell script to print even numbers in between 1 to 20.
+==========================================================================
+
+#! /bin/bash
+
+for(( i=1; i<=20; i++ ))
+do
+ if(( i%2 == 0)); then
+   echo $i
+ fi
+done 
+
+=============
+While Loop
+=============
+
+=> While loop is used to execute statements until condition is true
+
+syntax:
+
+while [ condition ]
+ do
+
+ // stms
+
+ done
+
+------------------------------------------
+print nums from 1 to 10 using while loop
+------------------------------------------
+
+#! /bin/bash
+
+N=1
+while [ $N -le 10 ]
+do
+ echo $N
+ let N++
+done 
+
+============================
+Print Numbers from 10 to 1 
+============================
+
+#! /bin/bash
+
+N=10
+while [ $N -gt 0 ]
+do
+ echo $N
+ let N--
+done 
+
+======================
+Functions / Methods
+======================
+
+=> Functions are used to perform some action / task.
+
+=> Using functions we can divide big task into multiple small tasks.
+
+=> Using functions we can divide our work logically
+
+=> Functions are re-usable
+
+-------
+syntax
+-------
+
+# create function
+function  funName(){
+	// stmts (body)
+}
+
+# call function for execution
+funName
+
+====================== shell script with Function ===============
+
+#! /bin/bash
+
+function welcome(){
+     echo "welcome to ashokit"
+     echo "welcome to devops"
+     echo "welcome to aws"
+}
+
+welcome
+-------------------------------------------------
+
+
+========================
+Command Line Arguments
+========================
+
+=> cmd args are used to supply values to script file at the time of script execution
+
+		sh task.sh 10 20 ashokit devops
+
+=> We can read cmd args in script like below
+
+$# => to get total no.of cmd args we passed		
+
+$1 => Read first cmd arg
+
+$2 => Read second cmd arg
+
+$3 => Read third cmd arg
+
+$* => Read all cmd args
+
+-------------------------------------
+
+#! /bin/bash
+
+echo "Total Args : $#"
+
+echo "First Arg : $1"
+
+echo "Second Arg: $2"
+
+echo "================="
+
+echo "All args : $*"
+
+
+=============================================================================
+Requirement: Write shell script to perform sum of two numbers using cmd args
+=============================================================================
+
+#! /bin/bash
+
+echo "Result : $(($1+$2))"
+
+===============
+Assignments
+===============
+
+1) Write shell script to check given number is prime number or not
+
+2) Write shell script to check given string is palindrome or not
+
+		Ex: liril, madam, ashok
+
+3) Write shell scritp to print table of given number (Ex: 2)
+
+		2 * 1 = 2
+		2 * 2 = 4
+		..
+		2 * 10 = 20
+
+4) Write a shell script to take backup of /home/ec2-user directory
+
+
+====================
+What is Scheduling
+====================
+
+shell script file : system-health-check.sh
+
+Requriement :: Everyday @9:00 AM we have to run above shell script file.
+
+=> Instead of running that file manually, we can use scheduling.
+
+=> Scheduling means configuring the tasks to be executed automatically.
+
+=> In linux, we will use CRON to schedule jobs/scripts execution.
+
+=> CRON is an utility in linux to schedule jobs execution.
+
+=> In real-time we will use several jobs on daily/weekly/monthly/yearly basis to automate our work.
+
+		- Delete temp files
+		- Take backup of files
+		- System health checks
+
+================
+CRON JOB Syntax	
+================
+
+Syntax:  * * * * * <script-file-name>
+
+=> First * will represent minutes (0 - 59)
+
+=> Second * will represent hour ( 0 - 23 )
+
+=> Third * will represent day of month ( 1 - 31 )
+
+=> Fourth * will represent month of year ( 1 - 12 )
+
+=> Fifth * will represent day of week ( 0 - 6 / sun - sat)
+
+==================
+What is CROND ?
+==================
+
+=> In linux machines, CROND is a deamon process (background process).
+
+=> Every minute, CROND will be checking for CRON Jobs Schedule for the execution.
+
+
+======================
+Sample CRON Schedules
+======================
+
+# Run for every 15 mins
+*/15 * * * * backup.sh
+
+# Run everday @5:00 AM
+0 5 * * * backup.ash
+
+# Run everyday @5:00 PM
+0 17 * * * backup.sh
+
+# Run every month on first day @9:00 AM
+0 9 1 * * backup.sh
+
+# Run job everyday @4:15 PM Monday - Friday
+15 16 * * 1-5 backup.sh
+
+Note: We can write cron expression using below website
+
+	URL : https://crontab.guru/
+
+======================================
+Where to configure cronjob in linux ?
+======================================	
+
+-> crontab file is used to configure cronjobs in linux
+
+# open crontab file
+crontab -e
+
+# display cronjobs schedules
+crontab -l
+
+# remove crontab file
+crontab -r
+
+====================
+CRONJOB Practicals
+====================
+
+1) Launch Linux machine with UBUNTU AMI
+
+2) Connect with Linux VM using SSH client
+
+3) Create shell script file and keep below content
+
+    $ vi task.sh
+
+touch /home/ubuntu/f1.txt
+
+touch /home/ubuntu/f2.txt
+
+4) Provide execute permission for script file
+
+    $ chmod +x task.sh
+
+5) Open crontab file and configure job schedule
+
+    $ crontab -e    
+
+Note: Add below job schedule info
+
+    */1 * * * * /bin/bash /home/ubuntu/task.sh
+
+6) Save and close the crontab file (ctrl + x + y + enter)
+
+7) After 1 minute check files got created or not.
+
+        $ ls -l
+
+8) To remove crontab file we can use below command
+
+		$crontab -r
+
+
+
+
+=========
+Summary
+=========
+
+1) Linux Architecture
+2) What is shell
+3) What is kernel
+4) What is shell scripting & why ?
+5) Proramming vs Scripting
+6) Sha-bang
+7) Variables (env & user-defined)
+8) .bashrc file
+9) cmd arguments
+11) Operators
+12) Conditional Stmts (if-elif-else)
+13) Looping stmts (for, while)
+14) functions
+15) Cronjobs
